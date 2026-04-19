@@ -1,15 +1,47 @@
 # Adaptive SNR-Aware Zero-DCE for Domain-Generalizable Low-Light Image Enhancement
 
-## 📌 Overview
-
-Low-light image enhancement (LLIE) is a critical task in computer vision, especially for applications such as surveillance, autonomous systems, and mobile photography.
-
-This project proposes an enhanced version of **Zero-Reference Deep Curve Estimation (Zero-DCE)** by integrating an **SNR-aware (Signal-to-Noise Ratio)** mechanism to improve robustness under extremely dark conditions and across different domains.
-
+This project proposes an An improved implementation of Zero-DCE with domain generalization, adaptive loss functions, and perceptual quality improvements for low-light image enhancement (LLIE).
 Unlike supervised approaches, this method does **not require paired low/normal-light datasets**, making it more practical for real-world scenarios.
 
+## 📌 Overview
+Low-light image enhancement (LLIE) is a critical task in computer vision, especially for applications such as surveillance, autonomous systems, and mobile photography.
+This project extends the original Zero-DCE architecture with several training and loss improvements targeting better PSNR, SSIM, MAE, and BRISQUE scores on mixed indoor/outdoor low-light datasets.
+Key improvements over the original Zero-DCE:
+
+Mixup-based Domain Generalization — cross-domain image blending in the dataloader to improve generalization across different lighting domains
+Adaptive Exposure Loss — dynamic exposure weight based on per-batch input brightness, replacing a fixed weight
+Local Patch-wise SNR Loss — spatially-aware noise regularization that focuses on the darkest, noisiest regions
+Warmup + Cosine LR Scheduling — prevents early LR collapse and training plateau
+BRISQUE evaluation via piq — cleaner no-reference quality metri
 ---
 
+## 🗂️ Project Structure
+```
+├── model.py              # Zero-DCE network (enhance_net_nopool)
+├── dataloader.py         # Dataset loader with Mixup-DG augmentation
+├── lowlight_train.py     # Training script with all improved losses
+├── lowlight_test.py      # Evaluation script with BRISQUE, PSNR, SSIM, MAE
+├── Myloss.py             # All loss functions (L_TV, L_spa, L_color, L_exp, L_per, L_SSIM)
+├── find_exposure_target.py  # Diagnostic script to calibrate L_exp to your dataset
+├── data/
+│   └── train_data/
+│       └── Train_Mix/    # Training images (subfolders supported)
+└── snapshots/            # Saved model checkpoints
+```
+## 📦 Training Data
+
+Note: The dataset is not included in this repository due to its size.
+Download it here: [Google Drive](https://drive.google.com/drive/folders/1Crg60dNMr9VxVW7r13pPTZkyvLUklf22?usp=sharing)
+
+After downloading, place the data in the following structure:
+```
+data/
+└── train_data/
+        └── (your downloaded folders here)
+```
+The dataloader recursively collects all .png, .jpg, and .jpeg files from subfolders automatically — no code changes needed.
+
+---
 ## 🧠 Methodology
 
 ### 🔹 Zero-DCE (Zero-Reference Deep Curve Estimation)
@@ -34,23 +66,6 @@ The proposed pipeline:
 2. Estimate SNR map
 3. Apply adaptive curve estimation (Zero-DCE)
 4. Produce enhanced output image
-
----
-
-## 🏗️ Project Structure
-
-```
-ZeroDCE_Skripsi/
-│
-├── model/                  # Model architecture (Zero-DCE + SNR modules)
-├── dataloader/             # Data loading and preprocessing
-├── utils/                  # Utility functions (metrics, helpers)
-├── lowlight_train.py       # Training script
-├── lowlight_test.py        # Inference / evaluation script
-├── requirements.txt        # Dependencies
-└── README.md               # Documentation
-```
-
 ---
 
 ## ⚙️ Installation
@@ -79,15 +94,18 @@ pip install -r requirements.txt
 
 ## 🚀 Usage
 
-### 🔸 Inference (Testing)
+### 🧪 Testing
 
-Run enhancement on low-light images:
+Update model_path in lowlight_test.py to point to your snapshots checkpoint:
+pythonmodel_path = 'snapshots/yourfolder/yourepoch.pth'
 
+Then run: 
 ```bash
 python lowlight_test.py
 ```
 
 ---
+
 
 ### 🔸 Training
 
@@ -106,34 +124,14 @@ This project uses the following quantitative metrics:
 * **MAE (Mean Absolute Error)**
 * **PSNR (Peak Signal-to-Noise Ratio)**
 * **SSIM (Structural Similarity Index)**
+* **BRISQUE (Blind/Referenceless Image Spatial Quality Evaluator)**
 
-> ⚠️ Note:
-> All images are resized to a common resolution before evaluation to ensure consistent metric computation.
-
----
-
-## 🖼️ Results
-
-### Example Outputs
-
-| Input (Low-Light) | Enhanced Output |
-| ----------------- | --------------- |
-| (add image)       | (add image)     |
-
-💡 Tip: Upload images to your repo and replace `(add image)` with:
-
-```markdown
-![input](path/to/image.png)
-```
-
----
 
 ## ⚠️ Important Notes
 
-* Dataset is not included due to size limitations
-* Pretrained model weights (`.pth`) are not included
-* Ensure input and ground truth images have **matching dimensions** before computing metrics
-* Resize operations may slightly affect evaluation results
+* Dataset is not included due to size limitations, it can be downloaded from the dataset link above.
+* Pretrained model weights (`.pth`) are included in snapshots, use **Final Version** for the latest pretrained weight.
+* Ensure input and ground truth images have **matching name** before computing metrics.
 
 ---
 
@@ -146,14 +144,6 @@ This project uses the following quantitative metrics:
 
 ---
 
-## 📚 References
-
-* Guo et al., *Zero-Reference Deep Curve Estimation for Low-Light Image Enhancement*
-* SNR-aware Low-Light Image Enhancement (CVPR-based methods)
-* Retinex-based image enhancement theory
-
----
-
 ## 👤 Author
 
 **Francesco Sebastian**
@@ -162,22 +152,10 @@ Computer Science – Bina Nusantara University
 
 ---
 
-## 📄 License
-
-This project is for academic and research purposes.
-
----
-
 ## ⭐ Acknowledgements
 
 This work is developed as part of undergraduate thesis research in low-light image enhancement.
-
----
-
-## 🚀 Future Work
-
-* Improve noise modeling using diffusion-based approaches
-* Integrate frequency-domain enhancement (Fourier-based LLIE)
-* Benchmark against state-of-the-art models (Diffusion LLIE, SNR-Net)
-
+Original Zero-DCE by Li et al.:
+Chongyi Li, Chunle Guo, Linghao Han, Jun Jiang, Ming-Ming Cheng, Jinwei Gu, Chen Change Loy. "Zero-Reference Deep Curve Estimation for Low-Light Image Enhancement." CVPR 2020.
+Original repository: https://github.com/Li-Chongyi/Zero-DCE
 ---
