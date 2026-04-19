@@ -28,7 +28,7 @@ Key improvements over the original Zero-DCE:
 │       └── Train_Mix/    # Training images (subfolders supported)
 └── snapshots/            # Saved model checkpoints
 ```
-## 📦 Training Data
+## 📦 Training & Testing Data
 
 Note: The dataset is not included in this repository due to its size.
 Download it here: [Google Drive](https://drive.google.com/drive/folders/1Crg60dNMr9VxVW7r13pPTZkyvLUklf22?usp=sharing)
@@ -37,7 +37,9 @@ After downloading, place the data in the following structure:
 ```
 data/
 └── train_data/
-        └── (your downloaded folders here)
+        └── (your train_data subfolders folders here)
+└── test_data/
+        └── (your test_data subfolders folders here)
 ```
 The dataloader recursively collects all .png, .jpg, and .jpeg files from subfolders automatically — no code changes needed.
 
