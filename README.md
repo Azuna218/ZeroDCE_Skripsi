@@ -43,6 +43,9 @@ data/
 ```
 The dataloader recursively collects all .png, .jpg, and .jpeg files from subfolders automatically — no code changes needed.
 
+For results, you can open it through our google notebook which is attached here:
+_https://colab.research.google.com/drive/1pGt1pGTJhnNluHcIatlBEghPP8vwICEk?usp=sharing_
+
 ---
 ## 🧠 Methodology
 
