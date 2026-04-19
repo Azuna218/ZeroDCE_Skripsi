@@ -99,7 +99,9 @@ pip install -r requirements.txt
 ### 🧪 Testing
 
 Update model_path in lowlight_test.py to point to your snapshots checkpoint:
+```bash
 pythonmodel_path = 'snapshots/yourfolder/yourepoch.pth'
+```
 
 Then run: 
 ```bash
