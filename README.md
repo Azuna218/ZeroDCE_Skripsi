@@ -8,11 +8,11 @@ Low-light image enhancement (LLIE) is a critical task in computer vision, especi
 This project extends the original Zero-DCE architecture with several training and loss improvements targeting better PSNR, SSIM, MAE, and BRISQUE scores on mixed indoor/outdoor low-light datasets.
 Key improvements over the original Zero-DCE:
 
-**Mixup-based Domain Generalization — cross-domain image blending in the dataloader to improve generalization across different lighting domains**
-**Adaptive Exposure Loss — dynamic exposure weight based on per-batch input brightness, replacing a fixed weight**
-**Local Patch-wise SNR Loss — spatially-aware noise regularization that focuses on the darkest, noisiest regions**
-**Warmup + Cosine LR Scheduling — prevents early LR collapse and training plateau**
-**BRISQUE evaluation via piq — cleaner no-reference quality metric**
+- **Mixup-based Domain Generalization — cross-domain image blending in the dataloader to improve generalization across different lighting domains**
+- **Adaptive Exposure Loss — dynamic exposure weight based on per-batch input brightness, replacing a fixed weight**
+- **Local Patch-wise SNR Loss — spatially-aware noise regularization that focuses on the darkest, noisiest regions**
+- **Warmup + Cosine LR Scheduling — prevents early LR collapse and training plateau**
+- **BRISQUE evaluation via piq — cleaner no-reference quality metric**
 ---
 
 ## 🗂️ Project Structure
