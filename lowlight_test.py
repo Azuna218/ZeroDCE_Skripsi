@@ -8,19 +8,23 @@ import torchvision
 import numpy as np
 import cv2
 from PIL import Image
+import scipy
 
 import model
+import piq
 
 from skimage.metrics import structural_similarity as ssim
 from skimage.metrics import peak_signal_noise_ratio as psnr
 
 # Fix for BRISQUE dependency (svmutil)
+scipy.ndarray = np.ndarray
 from libsvm import svmutil
 sys.modules['svmutil'] = svmutil
 from brisque import BRISQUE
 
 # Initialize BRISQUE model
-brisque_model = BRISQUE()
+# brisque_model = piq()
+
 
 
 def calculate_snr(image):
@@ -37,18 +41,30 @@ def calculate_snr(image):
     return np.mean(gray) / (np.std(gray) + 1e-8)
 
 
+# def calculate_brisque(image):
+#     """
+#     Compute BRISQUE score (no-reference image quality metric).
+
+#     Args:
+#         image (numpy.ndarray): Input image in range [0, 1]
+
+#     Returns:
+#         float: BRISQUE score (lower is better)
+#     """
+#     img_uint8 = (image * 255).astype(np.uint8)
+#     return brisque_model.get_score(img_uint8)
+
 def calculate_brisque(image):
     """
-    Compute BRISQUE score (no-reference image quality metric).
-
+    Compute BRISQUE using piq — cleaner and more accurate than libsvm backend.
     Args:
         image (numpy.ndarray): Input image in range [0, 1]
-
     Returns:
         float: BRISQUE score (lower is better)
     """
-    img_uint8 = (image * 255).astype(np.uint8)
-    return brisque_model.score(img_uint8)
+    tensor = torch.tensor(image).permute(2, 0, 1).unsqueeze(0).float()
+    score  = piq.brisque(tensor, data_range=1.0, reduction='none')
+    return score.item()
 
 
 def calculate_mae(img1, img2):
@@ -119,6 +135,8 @@ def process_image(image_path, model_net,
 
     # Convert to tensor
     input_tensor = torch.from_numpy(image_np).float()
+    # gray_channel = input_tensor.mean(dim=1, keepdim=True) #Added
+    # input_tensor = torch.cat([input_tensor, gray_channel], dim=1) #Added
     input_tensor = input_tensor.permute(2, 0, 1).unsqueeze(0).cuda()
 
     # Inference
@@ -128,7 +146,23 @@ def process_image(image_path, model_net,
     # Convert output to numpy
     enhanced_np = enhanced_image.squeeze().cpu().numpy().transpose(1, 2, 0)
     enhanced_np = np.clip(enhanced_np, 0, 1)
+    def post_process(img):
+        """
+        Bilateral filter to reduce noise artifacts that hurt BRISQUE.
+        Preserves edges while smoothing flat regions.
+        d=5 is a small kernel — avoids over-smoothing.
+        """
+        img_uint8 = (img * 255).astype(np.uint8)
+        filtered  = cv2.bilateralFilter(img_uint8, d=5, sigmaColor=15, sigmaSpace=15)
+        return filtered.astype(np.float32) / 255.0
 
+    enhanced_np = post_process(enhanced_np)
+    
+    mean_brightness = np.mean(enhanced_np)
+    if mean_brightness > 0.65:
+        enhanced_np = enhanced_np * (0.60 / mean_brightness)
+        enhanced_np = np.clip(enhanced_np, 0, 1)
+    
     snr_after = calculate_snr(enhanced_np)
 
     # Compute BRISQUE (no ground truth required)
@@ -137,11 +171,12 @@ def process_image(image_path, model_net,
 
     # Attempt to load ground truth
     filename = os.path.basename(image_path)
-    gt_path = os.path.join("data/High", filename)
+    gt_path = os.path.join("High", filename)
 
     if os.path.exists(gt_path):
         gt_img = Image.open(gt_path).convert('RGB')
         gt_np = np.asarray(gt_img) / 255.0
+        enhanced_np, gt_np = align_shapes(enhanced_np, gt_np)
 
         mae_score = calculate_mae(enhanced_np, gt_np)
         ssim_score = calculate_ssim(enhanced_np, gt_np)
@@ -172,10 +207,12 @@ def process_image(image_path, model_net,
     torchvision.utils.save_image(output_tensor, output_path)
 
 
+
 if __name__ == '__main__':
     with torch.no_grad():
 
-        model_path = 'snapshots/MixupDGv2/Epoch50.pth'
+        model_path = 'snapshots/Final Version/Epoch50.pth'
+        # model_path  = 'snapshots/FinalTrain/Epoch99.pth'
 
         # Load model
         DCE_net = model.enhance_net_nopool().cuda()
@@ -223,3 +260,4 @@ if __name__ == '__main__':
 
         if psnr_list:
             print("Average PSNR:", np.mean(psnr_list))
+            

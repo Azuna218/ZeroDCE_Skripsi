@@ -107,7 +107,8 @@ class lowlight_loader(data.Dataset):
                                  Lower = blends lean more toward one image.
         """
         self.data_list = populate_train_list(lowlight_images_path)
-        self.size = 256
+        # self.size = 256
+        self.size = 384
         self.mixup_prob = mixup_prob
         self.mixup_alpha = mixup_alpha
 
