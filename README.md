@@ -160,6 +160,7 @@ Computer Science – Bina Nusantara University
 
 This work is developed as part of undergraduate thesis research in low-light image enhancement.
 Original Zero-DCE by Li et al.:
-- Chongyi Li, Chunle Guo, Linghao Han, Jun Jiang, Ming-Ming Cheng, Jinwei Gu, Chen Change Loy. "Zero-Reference Deep Curve Estimation for Low-Light Image Enhancement." CVPR 2020.
+Chongyi Li, Chunle Guo, Linghao Han, Jun Jiang, Ming-Ming Cheng, Jinwei Gu, Chen Change Loy. "Zero-Reference Deep Curve Estimation for Low-Light Image Enhancement." CVPR 2020.
 Original repository: https://github.com/Li-Chongyi/Zero-DCE
+
 ---
